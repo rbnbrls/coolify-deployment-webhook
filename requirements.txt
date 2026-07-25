@@ -1,0 +1,6 @@
+# Core dependencies (none — the server uses stdlib http.server)
+# The Coolify log fetcher and GitHub issue creator both use stdlib only.
+
+# For development / testing:
+pytest>=8.0
+requests>=2.31.0   # used in tests to simulate webhook calls
