@@ -29,3 +29,4 @@ python webhook_server.py
 pip install pytest requests
 python -m pytest tests/ -v
 ```
+# CI verification - trigger workflow
