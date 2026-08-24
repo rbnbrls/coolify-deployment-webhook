@@ -33,7 +33,7 @@ import os
 import re
 from dataclasses import dataclass, field
 from typing import Any
-from urllib.error import URLError
+from urllib.error import URLError, HTTPError
 from urllib.request import Request, urlopen
 from urllib.parse import urljoin
 
@@ -203,34 +203,34 @@ def _make_request(url: str, api_token: str) -> dict[str, Any]:
             if not body.strip():
                 raise CoolifyAPIError(f"Empty response from {url}")
             return json.loads(body)
+    except HTTPError as e:
+        # HTTP errors have a status code attribute
+        if e.code == 404:
+            raise DeploymentNotFoundError(
+                f"Deployment not found at {url}"
+            ) from e
+        elif e.code == 401:
+            raise AuthenticationError(
+                "Invalid or missing Coolify API token (401)"
+            ) from e
+        elif e.code == 403:
+            raise PermissionError_(
+                "Token lacks required permissions (403). "
+                "The token may need the 'can_read_sensitive' ability "
+                "to view deployment logs."
+            ) from e
+        else:
+            # Try to read error body for more detail
+            try:
+                err_body = e.read().decode("utf-8")
+                detail = json.loads(err_body) if err_body else {}
+                msg = detail.get("message", detail.get("detail", str(e)))
+            except Exception:
+                msg = str(e)
+            raise CoolifyAPIError(
+                f"Coolify API returned HTTP {e.code}: {msg}"
+            ) from e
     except URLError as e:
-        # Try to extract HTTP status from the error
-        if hasattr(e, "code") and e.code is not None:
-            if e.code == 404:
-                raise DeploymentNotFoundError(
-                    f"Deployment not found at {url}"
-                ) from e
-            elif e.code == 401:
-                raise AuthenticationError(
-                    "Invalid or missing Coolify API token (401)"
-                ) from e
-            elif e.code == 403:
-                raise PermissionError_(
-                    "Token lacks required permissions (403). "
-                    "The token may need the 'can_read_sensitive' ability "
-                    "to view deployment logs."
-                ) from e
-            else:
-                # Try to read error body for more detail
-                try:
-                    err_body = e.read().decode("utf-8") if hasattr(e, "read") else ""
-                    detail = json.loads(err_body) if err_body else {}
-                    msg = detail.get("message", detail.get("detail", str(e)))
-                except Exception:
-                    msg = str(e)
-                raise CoolifyAPIError(
-                    f"Coolify API returned HTTP {e.code}: {msg}"
-                ) from e
         # Network-level errors (connection refused, timeout, DNS)
         reason = str(e.reason) if hasattr(e, "reason") else str(e)
         raise NetworkError(f"Network error contacting Coolify API: {reason}") from e
