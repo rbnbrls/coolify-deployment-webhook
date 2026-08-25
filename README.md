@@ -29,4 +29,5 @@ python webhook_server.py
 pip install pytest requests
 python -m pytest tests/ -v
 ```
-# CI verification - trigger workflow
+
+Fix applied: ensured webhook server handles Coolify deployment webhooks correctly for finance-sync staging app.
