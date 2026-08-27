@@ -328,15 +328,18 @@ def run_server() -> None:
         def do_GET(self) -> None:
             """GET / → health check."""
             if self.path == "/":
-                self._send_json(200, {
-                    "status": "ok",
-                    "service": "coolify-deployment-webhook",
-                    "endpoints": {
-                        "/": "Health check (this page)",
-                        "/webhook": "POST — Accept Coolify deployment webhooks",
-                        "/health": "Health check (legacy)",
+                self._send_json(
+                    200,
+                    {
+                        "status": "ok",
+                        "service": "coolify-deployment-webhook",
+                        "endpoints": {
+                            "/": "Health check (this page)",
+                            "/webhook": "POST — Accept Coolify deployment webhooks",
+                            "/health": "Health check (legacy)",
+                        },
                     },
-                })
+                )
             elif self.path in ("/health", "/healthz"):
                 self._send_json(200, {"status": "healthy"})
             else:
@@ -367,14 +370,20 @@ def run_server() -> None:
                     "Coolify API error for deployment: %s",
                     exc,
                 )
-                self._send_json(502, {
-                    "error": f"Coolify API error: {exc}",
-                })
+                self._send_json(
+                    502,
+                    {
+                        "error": f"Coolify API error: {exc}",
+                    },
+                )
             except GitHubAPIError as exc:
                 logger.error("GitHub API error: %s", exc)
-                self._send_json(502, {
-                    "error": f"GitHub API error: {exc}",
-                })
+                self._send_json(
+                    502,
+                    {
+                        "error": f"GitHub API error: {exc}",
+                    },
+                )
             except Exception:
                 logger.exception("Unexpected error processing webhook")
                 self._send_json(500, {"error": "Internal server error"})

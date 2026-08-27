@@ -84,7 +84,9 @@ class TestGetEventType:
         assert _get_event_type({"type": "deployment.failed"}) == "deployment.failed"
 
     def test_event_type_key(self) -> None:
-        assert _get_event_type({"event_type": "deployment.failed"}) == "deployment.failed"
+        assert (
+            _get_event_type({"event_type": "deployment.failed"}) == "deployment.failed"
+        )
 
     def test_missing_event(self) -> None:
         assert _get_event_type({"status": "failed"}) is None
@@ -121,36 +123,46 @@ class TestGetDeploymentId:
         assert result == "ghi-789"
 
     def test_data_envelope(self) -> None:
-        result = _get_deployment_id({
-            "event": "deployment.failed",
-            "data": {"deployment_uuid": "nested-id"},
-        })
+        result = _get_deployment_id(
+            {
+                "event": "deployment.failed",
+                "data": {"deployment_uuid": "nested-id"},
+            }
+        )
         assert result == "nested-id"
 
     def test_data_envelope_fallback_keys(self) -> None:
-        result = _get_deployment_id({
-            "data": {"id": "nested-id-2"},
-        })
+        result = _get_deployment_id(
+            {
+                "data": {"id": "nested-id-2"},
+            }
+        )
         assert result == "nested-id-2"
 
     def test_data_envelope_uuid(self) -> None:
-        result = _get_deployment_id({
-            "data": {"uuid": "nested-uuid"},
-        })
+        result = _get_deployment_id(
+            {
+                "data": {"uuid": "nested-uuid"},
+            }
+        )
         assert result == "nested-uuid"
 
     def test_resource_sub_object(self) -> None:
-        result = _get_deployment_id({
-            "event": "deployment.failed",
-            "resource": {"deployment_uuid": "resource-id"},
-        })
+        result = _get_deployment_id(
+            {
+                "event": "deployment.failed",
+                "resource": {"deployment_uuid": "resource-id"},
+            }
+        )
         assert result == "resource-id"
 
     def test_deployment_sub_object(self) -> None:
-        result = _get_deployment_id({
-            "event": "deployment.failed",
-            "deployment": {"id": "deploy-123"},
-        })
+        result = _get_deployment_id(
+            {
+                "event": "deployment.failed",
+                "deployment": {"id": "deploy-123"},
+            }
+        )
         assert result == "deploy-123"
 
     def test_no_deployment_id(self) -> None:
@@ -162,10 +174,12 @@ class TestGetDeploymentId:
 
     def test_data_envelope_takes_precedence(self) -> None:
         """'data' envelope is checked before top level."""
-        result = _get_deployment_id({
-            "deployment_uuid": "top-level",
-            "data": {"deployment_uuid": "nested"},
-        })
+        result = _get_deployment_id(
+            {
+                "deployment_uuid": "top-level",
+                "data": {"deployment_uuid": "nested"},
+            }
+        )
         assert result == "nested"
 
 
@@ -180,18 +194,22 @@ class TestHandleWebhook:
     """
 
     def test_ignores_non_failure_event(self) -> None:
-        result = handle_webhook({
-            "event": "deployment.successful",
-            "deployment_uuid": "abc-123",
-        })
+        result = handle_webhook(
+            {
+                "event": "deployment.successful",
+                "deployment_uuid": "abc-123",
+            }
+        )
         assert result["status"] == "ignored"
         assert "not a deployment failure" in result["detail"]
 
     def test_ignores_unknown_event_type(self) -> None:
-        result = handle_webhook({
-            "event": "health.check",
-            "deployment_uuid": "abc-123",
-        })
+        result = handle_webhook(
+            {
+                "event": "health.check",
+                "deployment_uuid": "abc-123",
+            }
+        )
         assert result["status"] == "ignored"
 
     def test_missing_deployment_id_raises(self) -> None:
@@ -203,7 +221,8 @@ class TestHandleWebhook:
             handle_webhook({"event": "deployment.failed", "data": {}})
 
     @pytest.mark.skipif(
-        not os.environ.get("COOLIFY_API_URL") or not os.environ.get("COOLIFY_API_TOKEN"),
+        not os.environ.get("COOLIFY_API_URL")
+        or not os.environ.get("COOLIFY_API_TOKEN"),
         reason="COOLIFY_API_URL and COOLIFY_API_TOKEN required for integration test",
     )
     def test_integration_with_real_coolify_and_github(self) -> None:
