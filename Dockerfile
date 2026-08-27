@@ -1,5 +1,5 @@
 # ── Stage 1: Base ─────────────────────────────────────────────────────────────
-FROM python:3.11-slim AS base
+FROM python:3.11.9-slim AS base
 
 WORKDIR /app
 
@@ -8,8 +8,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # ── Stage 2: App ───────────────────────────────────────────────────────────────
-FROM python:3.11-slim
-
+FROM python:3.11.9-slim
+RUN apt-get update && apt-get upgrade -y
 WORKDIR /app
 
 # Copy production dependencies from builder
@@ -22,8 +22,7 @@ COPY coolify_deployment_logs.py .
 COPY github_issue_creator.py .
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 # Run as non-root user
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
