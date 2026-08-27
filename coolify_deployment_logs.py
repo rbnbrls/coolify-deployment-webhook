@@ -30,12 +30,10 @@ from __future__ import annotations
 
 import json
 import os
-import re
 from dataclasses import dataclass, field
 from typing import Any
 from urllib.error import URLError
 from urllib.request import Request, urlopen
-from urllib.parse import urljoin
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -97,9 +95,10 @@ class NetworkError(CoolifyAPIError):
 @dataclass
 class LogEntry:
     """A single log entry from a Coolify deployment."""
+
     command: str | None
     output: str
-    type: str           # "stdout" | "stderr"
+    type: str  # "stdout" | "stderr"
     timestamp: str
     hidden: bool = False
     batch: int = 1
@@ -121,6 +120,7 @@ class LogEntry:
 @dataclass
 class DeploymentData:
     """Parsed deployment record returned by the Coolify API."""
+
     deployment_uuid: str
     status: str
     application_name: str = ""
@@ -207,9 +207,7 @@ def _make_request(url: str, api_token: str) -> dict[str, Any]:
         # Try to extract HTTP status from the error
         if hasattr(e, "code") and e.code is not None:
             if e.code == 404:
-                raise DeploymentNotFoundError(
-                    f"Deployment not found at {url}"
-                ) from e
+                raise DeploymentNotFoundError(f"Deployment not found at {url}") from e
             elif e.code == 401:
                 raise AuthenticationError(
                     "Invalid or missing Coolify API token (401)"
@@ -237,9 +235,7 @@ def _make_request(url: str, api_token: str) -> dict[str, Any]:
     except (OSError, ConnectionError, TimeoutError) as e:
         raise NetworkError(f"Network error: {e}") from e
     except json.JSONDecodeError as e:
-        raise CoolifyAPIError(
-            f"Invalid JSON response from Coolify API: {e}"
-        ) from e
+        raise CoolifyAPIError(f"Invalid JSON response from Coolify API: {e}") from e
 
 
 # ── Public API ─────────────────────────────────────────────────────────────────
@@ -281,7 +277,9 @@ def fetch_deployment(
 
     # If logs are empty but status indicates a failure, flag it
     if not deployment.logs and deployment.status in (
-        "failed", "cancelled", "cancelled-by-user"
+        "failed",
+        "cancelled",
+        "cancelled-by-user",
     ):
         # Logs may be hidden due to insufficient token permissions
         pass  # we surface this later via a note
@@ -345,8 +343,12 @@ def get_log_summary(deployment: DeploymentData) -> dict[str, Any]:
     Useful for diagnostics without dumping every line.
     """
     total = len(deployment.logs)
-    stderr_count = sum(1 for e in deployment.logs if e.type == "stderr" and not e.hidden)
-    stdout_count = sum(1 for e in deployment.logs if e.type == "stdout" and not e.hidden)
+    stderr_count = sum(
+        1 for e in deployment.logs if e.type == "stderr" and not e.hidden
+    )
+    stdout_count = sum(
+        1 for e in deployment.logs if e.type == "stdout" and not e.hidden
+    )
     hidden_count = sum(1 for e in deployment.logs if e.hidden)
 
     # Find the last batch number
@@ -431,8 +433,14 @@ def main() -> None:
     import sys
 
     if len(sys.argv) < 2:
-        print("Usage: python coolify_deployment_logs.py <deployment-uuid>", file=sys.stderr)
-        print("       COOLIFY_API_TOKEN and COOLIFY_BASE_URL are read from env.", file=sys.stderr)
+        print(
+            "Usage: python coolify_deployment_logs.py <deployment-uuid>",
+            file=sys.stderr,
+        )
+        print(
+            "       COOLIFY_API_TOKEN and COOLIFY_BASE_URL are read from env.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     deployment_id = sys.argv[1]
