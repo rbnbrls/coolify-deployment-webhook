@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import json
 import os
-import re
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -300,8 +299,8 @@ def create_issue(
         ) from exc
     except TimeoutError as exc:
         raise NetworkError(
-            f"Request to GitHub API timed out after 30 seconds."
-        ) from exc
+                        "Request to GitHub API timed out after 30 seconds."
+                    ) from exc
 
     # Parse response to extract issue URL
     try:
