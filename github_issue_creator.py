@@ -296,7 +296,9 @@ def create_issue(
             f"Network error while contacting the GitHub API: {reason}"
         ) from exc
     except TimeoutError as exc:
-        raise NetworkError("Request to GitHub API timed out after 30 seconds.") from exc
+        raise NetworkError(
+                        "Request to GitHub API timed out after 30 seconds."
+                    ) from exc
 
     # Parse response to extract issue URL
     try:
