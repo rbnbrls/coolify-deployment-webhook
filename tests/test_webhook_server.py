@@ -19,6 +19,7 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+from typing import Generator
 
 import pytest
 
@@ -245,8 +246,8 @@ class TestMakeResponse:
 # ── Integration: server startup and HTTP handling ──────────────────────────────
 
 
-@pytest.fixture(scope="module")
-def server_url() -> str:
+@ pytest.fixture(scope="module")
+def server_url() -> Generator[str, None, None]:
     """Start the webhook server as a subprocess and return its base URL.
 
     Requires the 5 env vars needed for real API calls; if they are not all
