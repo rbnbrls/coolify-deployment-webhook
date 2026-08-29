@@ -24,7 +24,6 @@ from github_issue_creator import (
     _resolve_token,
 )
 
-
 # ── Fixtures ───────────────────────────────────────────────────────────────────
 
 
@@ -99,7 +98,11 @@ class FakeHeaders(dict):
 
 def test_parse_rate_limit_all_present():
     headers = FakeHeaders(
-        {"X-RateLimit-Remaining": "42", "X-RateLimit-Limit": "5000", "X-RateLimit-Reset": "1712345678"}
+        {
+            "X-RateLimit-Remaining": "42",
+            "X-RateLimit-Limit": "5000",
+            "X-RateLimit-Reset": "1712345678",
+        }
     )
     info = _parse_rate_limit_headers(headers)
     assert info["remaining"] == 42
@@ -153,12 +156,14 @@ def test_extract_message_simple():
 
 
 def test_extract_message_with_errors_array():
-    body = json.dumps({
-        "message": "Validation Failed",
-        "errors": [
-            {"resource": "Issue", "field": "title", "code": "missing_field"},
-        ],
-    }).encode()
+    body = json.dumps(
+        {
+            "message": "Validation Failed",
+            "errors": [
+                {"resource": "Issue", "field": "title", "code": "missing_field"},
+            ],
+        }
+    ).encode()
     result = _extract_error_message(body)
     assert "title" in result
     assert "missing_field" in result
@@ -249,7 +254,9 @@ def test_create_issue_with_labels(mock_urlopen):
     mock_urlopen.return_value.__enter__.return_value = mock_resp
 
     url = create_issue(
-        "owner", "repo", "Bug: login broken",
+        "owner",
+        "repo",
+        "Bug: login broken",
         body="Details here",
         labels=["bug", "coolify-error"],
         token="ghp_explicit",
@@ -363,10 +370,12 @@ def test_create_issue_422():
     """Invalid payload should raise ValidationError."""
     from urllib.error import HTTPError
 
-    body = json.dumps({
-        "message": "Validation Failed",
-        "errors": [{"resource": "Issue", "field": "title", "code": "missing"}],
-    }).encode()
+    body = json.dumps(
+        {
+            "message": "Validation Failed",
+            "errors": [{"resource": "Issue", "field": "title", "code": "missing"}],
+        }
+    ).encode()
 
     mock_fp = MagicMock()
     mock_fp.read.return_value = body
@@ -391,7 +400,11 @@ def test_create_issue_rate_limit_403(mock_urlopen):
     """Rate limit exceeded (403 with 0 remaining) should raise RateLimitError."""
     from urllib.error import HTTPError
 
-    headers = {"X-RateLimit-Remaining": "0", "X-RateLimit-Limit": "5000", "X-RateLimit-Reset": "1712345678"}
+    headers = {
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Limit": "5000",
+        "X-RateLimit-Reset": "1712345678",
+    }
     body = b'{"message": "API rate limit exceeded"}'
 
     class FakeFPRL:

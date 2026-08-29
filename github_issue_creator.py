@@ -291,9 +291,7 @@ def create_issue(
             f"GitHub API returned HTTP {status}. Details: {err_msg}"
         ) from exc
     except URLError as exc:
-        reason = (
-            str(exc.reason) if hasattr(exc, "reason") and exc.reason else "Unknown"
-        )
+        reason = str(exc.reason) if hasattr(exc, "reason") and exc.reason else "Unknown"
         raise NetworkError(
             f"Network error while contacting the GitHub API: {reason}"
         ) from exc
@@ -306,9 +304,7 @@ def create_issue(
     try:
         issue_data: dict[str, Any] = json.loads(response_body)
     except (json.JSONDecodeError, ValueError) as exc:
-        raise GitHubAPIError(
-            f"Invalid JSON in GitHub API response: {exc}"
-        ) from exc
+        raise GitHubAPIError(f"Invalid JSON in GitHub API response: {exc}") from exc
 
     issue_url: str | None = issue_data.get("html_url")
     if not issue_url:
