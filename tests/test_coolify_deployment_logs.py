@@ -24,7 +24,6 @@ from coolify_deployment_logs import (
     _resolve_config,
 )
 
-
 # ── Fixtures ───────────────────────────────────────────────────────────────────
 
 
@@ -282,10 +281,30 @@ def test_fetch_deployment_invalid_json(mock_urlopen):
 
 def test_extract_stderr_lines():
     logs = [
-        LogEntry(command=None, output="Cloning...", type="stdout", timestamp="2026-01-01T00:00:00Z"),
-        LogEntry(command=None, output="Error: build failed", type="stderr", timestamp="2026-01-01T00:00:01Z"),
-        LogEntry(command=None, output="npm ERR! code ELIFECYCLE", type="stderr", timestamp="2026-01-01T00:00:02Z"),
-        LogEntry(command=None, output="Build succeeded", type="stdout", timestamp="2026-01-01T00:00:03Z"),
+        LogEntry(
+            command=None,
+            output="Cloning...",
+            type="stdout",
+            timestamp="2026-01-01T00:00:00Z",
+        ),
+        LogEntry(
+            command=None,
+            output="Error: build failed",
+            type="stderr",
+            timestamp="2026-01-01T00:00:01Z",
+        ),
+        LogEntry(
+            command=None,
+            output="npm ERR! code ELIFECYCLE",
+            type="stderr",
+            timestamp="2026-01-01T00:00:02Z",
+        ),
+        LogEntry(
+            command=None,
+            output="Build succeeded",
+            type="stdout",
+            timestamp="2026-01-01T00:00:03Z",
+        ),
     ]
     deployment = DeploymentData(deployment_uuid="u1", status="failed", logs=logs)
 
@@ -299,9 +318,24 @@ def test_extract_stderr_lines():
 def test_extract_stdout_with_error_keywords():
     """Even stdout lines can be flagged if they contain error keywords."""
     logs = [
-        LogEntry(command=None, output="Step 1/5 : FROM node:18", type="stdout", timestamp="t1"),
-        LogEntry(command=None, output="failed to solve: process did not complete", type="stdout", timestamp="t2"),
-        LogEntry(command=None, output="Successfully built abc123", type="stdout", timestamp="t3"),
+        LogEntry(
+            command=None,
+            output="Step 1/5 : FROM node:18",
+            type="stdout",
+            timestamp="t1",
+        ),
+        LogEntry(
+            command=None,
+            output="failed to solve: process did not complete",
+            type="stdout",
+            timestamp="t2",
+        ),
+        LogEntry(
+            command=None,
+            output="Successfully built abc123",
+            type="stdout",
+            timestamp="t3",
+        ),
     ]
     deployment = DeploymentData(deployment_uuid="u1", status="failed", logs=logs)
 
@@ -316,8 +350,15 @@ def test_extract_with_warnings_flag():
     Use a line with a non-keyword cautionary phrasing to test the flag.
     """
     logs = [
-        LogEntry(command=None, output="caution: this might be a problem", type="stdout", timestamp="t1"),
-        LogEntry(command=None, output="Error: build failed", type="stderr", timestamp="t2"),
+        LogEntry(
+            command=None,
+            output="caution: this might be a problem",
+            type="stdout",
+            timestamp="t1",
+        ),
+        LogEntry(
+            command=None, output="Error: build failed", type="stderr", timestamp="t2"
+        ),
     ]
     deployment = DeploymentData(deployment_uuid="u1", status="failed", logs=logs)
 
@@ -332,8 +373,15 @@ def test_extract_with_warnings_flag():
 
     # Actually test a warning keyword that IS a match
     logs2 = [
-        LogEntry(command=None, output="warning: deprecated syntax", type="stdout", timestamp="t1"),
-        LogEntry(command=None, output="Error: build failed", type="stderr", timestamp="t2"),
+        LogEntry(
+            command=None,
+            output="warning: deprecated syntax",
+            type="stdout",
+            timestamp="t1",
+        ),
+        LogEntry(
+            command=None, output="Error: build failed", type="stderr", timestamp="t2"
+        ),
     ]
     deployment2 = DeploymentData(deployment_uuid="u1", status="failed", logs=logs2)
 
@@ -345,9 +393,30 @@ def test_extract_with_warnings_flag():
 
 def test_extract_min_batch_filter():
     logs = [
-        LogEntry(command=None, output="Setup...", type="stdout", batch=1, order=1, timestamp="t1"),
-        LogEntry(command=None, output="Error in build", type="stderr", batch=1, order=2, timestamp="t2"),
-        LogEntry(command=None, output="Final error", type="stderr", batch=2, order=1, timestamp="t3"),
+        LogEntry(
+            command=None,
+            output="Setup...",
+            type="stdout",
+            batch=1,
+            order=1,
+            timestamp="t1",
+        ),
+        LogEntry(
+            command=None,
+            output="Error in build",
+            type="stderr",
+            batch=1,
+            order=2,
+            timestamp="t2",
+        ),
+        LogEntry(
+            command=None,
+            output="Final error",
+            type="stderr",
+            batch=2,
+            order=1,
+            timestamp="t3",
+        ),
     ]
     deployment = DeploymentData(deployment_uuid="u1", status="failed", logs=logs)
 
@@ -358,8 +427,22 @@ def test_extract_min_batch_filter():
 
 def test_extract_hidden_entries_skipped():
     logs = [
-        LogEntry(command=None, output="Error visible", type="stderr", hidden=False, order=1, timestamp="t1"),
-        LogEntry(command=None, output="Error hidden", type="stderr", hidden=True, order=2, timestamp="t2"),
+        LogEntry(
+            command=None,
+            output="Error visible",
+            type="stderr",
+            hidden=False,
+            order=1,
+            timestamp="t1",
+        ),
+        LogEntry(
+            command=None,
+            output="Error hidden",
+            type="stderr",
+            hidden=True,
+            order=2,
+            timestamp="t2",
+        ),
     ]
     deployment = DeploymentData(deployment_uuid="u1", status="failed", logs=logs)
 
@@ -391,7 +474,12 @@ def test_extract_no_logs():
 @patch("coolify_deployment_logs.fetch_deployment")
 def test_diagnostics_success(mock_fetch):
     logs = [
-        LogEntry(command=None, output="Error: build step failed", type="stderr", timestamp="t"),
+        LogEntry(
+            command=None,
+            output="Error: build step failed",
+            type="stderr",
+            timestamp="t",
+        ),
     ]
     mock_fetch.return_value = DeploymentData(
         deployment_uuid="u1", status="failed", logs=logs
@@ -420,7 +508,9 @@ def test_diagnostics_no_logs(mock_fetch):
 @patch("coolify_deployment_logs.fetch_deployment")
 def test_diagnostics_failed_but_no_error_lines(mock_fetch):
     logs = [
-        LogEntry(command=None, output="Everything looks fine", type="stdout", timestamp="t"),
+        LogEntry(
+            command=None, output="Everything looks fine", type="stdout", timestamp="t"
+        ),
         LogEntry(command=None, output="Build complete", type="stdout", timestamp="t"),
     ]
     mock_fetch.return_value = DeploymentData(
@@ -453,10 +543,38 @@ def test_diagnostics_successful_deployment_no_errors(mock_fetch):
 
 def test_log_summary_counts():
     logs = [
-        LogEntry(command=None, output="std1", type="stdout", hidden=False, batch=1, timestamp="t1"),
-        LogEntry(command=None, output="std2", type="stdout", hidden=False, batch=1, timestamp="t2"),
-        LogEntry(command=None, output="err1", type="stderr", hidden=False, batch=1, timestamp="t3"),
-        LogEntry(command=None, output="hidden1", type="stderr", hidden=True, batch=1, timestamp="t4"),
+        LogEntry(
+            command=None,
+            output="std1",
+            type="stdout",
+            hidden=False,
+            batch=1,
+            timestamp="t1",
+        ),
+        LogEntry(
+            command=None,
+            output="std2",
+            type="stdout",
+            hidden=False,
+            batch=1,
+            timestamp="t2",
+        ),
+        LogEntry(
+            command=None,
+            output="err1",
+            type="stderr",
+            hidden=False,
+            batch=1,
+            timestamp="t3",
+        ),
+        LogEntry(
+            command=None,
+            output="hidden1",
+            type="stderr",
+            hidden=True,
+            batch=1,
+            timestamp="t4",
+        ),
     ]
     deployment = DeploymentData(
         deployment_uuid="u1",
@@ -490,15 +608,17 @@ def test_log_summary_no_logs():
 
 
 def test_log_entry_from_dict_full():
-    entry = LogEntry.from_dict({
-        "command": "npm run build",
-        "output": "Error: build failed",
-        "type": "stderr",
-        "timestamp": "2026-07-23T12:00:00Z",
-        "hidden": False,
-        "batch": 2,
-        "order": 5,
-    })
+    entry = LogEntry.from_dict(
+        {
+            "command": "npm run build",
+            "output": "Error: build failed",
+            "type": "stderr",
+            "timestamp": "2026-07-23T12:00:00Z",
+            "hidden": False,
+            "batch": 2,
+            "order": 5,
+        }
+    )
     assert entry.command == "npm run build"
     assert entry.output == "Error: build failed"
     assert entry.type == "stderr"
@@ -509,11 +629,13 @@ def test_log_entry_from_dict_full():
 
 
 def test_log_entry_from_dict_minimal():
-    entry = LogEntry.from_dict({
-        "output": "Hello",
-        "type": "stdout",
-        "timestamp": "",
-    })
+    entry = LogEntry.from_dict(
+        {
+            "output": "Hello",
+            "type": "stdout",
+            "timestamp": "",
+        }
+    )
     assert entry.output == "Hello"
     assert entry.type == "stdout"
     assert entry.command is None
