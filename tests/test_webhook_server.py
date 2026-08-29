@@ -265,7 +265,7 @@ class TestMakeResponse:
 # ── Integration: server startup and HTTP handling ──────────────────────────────
 
 
-@ pytest.fixture(scope="module")
+@pytest.fixture(scope="module")
 def server_url() -> Generator[str, None, None]:
     """Start the webhook server as a subprocess and return its base URL.
 
