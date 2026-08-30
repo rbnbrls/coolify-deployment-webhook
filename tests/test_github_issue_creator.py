@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Any
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -329,12 +329,12 @@ def test_create_issue_401():
     mock_fp = MagicMock()
     mock_fp.read.return_value = b'{"message": "Bad credentials"}'
 
-    exc = HTTPError(
+    exc: Any = HTTPError(
         "http://api.github.com/repos/o/r/issues",
         401,
         "Unauthorized",
-        {},
-        mock_fp,
+        cast("Any", {}),
+        cast("Any", mock_fp),
     )
 
     with patch("github_issue_creator.urlopen") as mock_urlopen:
@@ -351,12 +351,12 @@ def test_create_issue_404():
     mock_fp = MagicMock()
     mock_fp.read.return_value = b'{"message": "Not Found"}'
 
-    exc = HTTPError(
+    exc: Any = HTTPError(
         "http://api.github.com/repos/no/such",
         404,
         "Not Found",
-        {},
-        mock_fp,
+        cast("Any", {}),
+        cast("Any", mock_fp),
     )
 
     with patch("github_issue_creator.urlopen") as mock_urlopen:
@@ -380,12 +380,12 @@ def test_create_issue_422():
     mock_fp = MagicMock()
     mock_fp.read.return_value = body
 
-    exc = HTTPError(
+    exc: Any = HTTPError(
         "http://api.github.com/repos/o/r/issues",
         422,
         "Unprocessable Entity",
-        {},
-        mock_fp,
+        cast("Any", {}),
+        cast("Any", mock_fp),
     )
 
     with patch("github_issue_creator.urlopen") as mock_urlopen:
@@ -414,12 +414,12 @@ def test_create_issue_rate_limit_403(mock_urlopen):
         def close(self):
             pass
 
-    exc = HTTPError(
+    exc: Any = HTTPError(
         "http://api.github.com/repos/o/r/issues",
         403,
         "Forbidden",
-        headers,
-        FakeFPRL(),
+        cast("Any", headers),
+        cast("Any", FakeFPRL()),
     )
     if hasattr(exc, "headers"):
         exc.headers = headers
@@ -444,12 +444,12 @@ def test_create_issue_rate_limit_429(mock_urlopen):
         def close(self):
             pass
 
-    exc = HTTPError(
+    exc: Any = HTTPError(
         "http://api.github.com/repos/o/r/issues",
         429,
         "Too Many Requests",
-        {},
-        FakeFPRL2(),
+        cast("Any", {}),
+        cast("Any", FakeFPRL2()),
     )
 
     mock_urlopen.side_effect = exc
@@ -470,12 +470,15 @@ def test_create_issue_403_no_rate_limit(mock_urlopen):
         def read(self):
             return body
 
-    exc = HTTPError(
+        def close(self):
+            pass
+
+    exc: Any = HTTPError(
         "http://api.github.com/repos/o/r/issues",
         403,
         "Forbidden",
-        headers,
-        FakeFP(),
+        cast("Any", headers),
+        cast("Any", FakeFP()),
     )
     if hasattr(exc, "headers"):
         exc.headers = headers
@@ -516,12 +519,12 @@ def test_create_issue_unexpected_status(mock_urlopen):
     mock_fp = MagicMock()
     mock_fp.read.return_value = b'{"message": "Internal Server Error"}'
 
-    exc = HTTPError(
+    exc: Any = HTTPError(
         "http://api.github.com/repos/o/r/issues",
         500,
         "Internal Server Error",
-        {},
-        mock_fp,
+        cast("Any", {}),
+        cast("Any", mock_fp),
     )
 
     mock_urlopen.side_effect = exc

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Any
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -188,12 +188,15 @@ def test_fetch_deployment_404(mock_urlopen):
         def read(self):
             return b'{"message": "Deployment not found."}'
 
+        def close(self):
+            pass
+
     mock_urlopen.side_effect = HTTPError(
         "http://example.com/api/v1/deployments/nonexistent",
         404,
         "Not Found",
-        {},
-        FakeFP(),
+        cast("Any", {}),
+        cast("Any", FakeFP()),
     )
 
     with pytest.raises(DeploymentNotFoundError, match="not found"):
@@ -211,8 +214,8 @@ def test_fetch_deployment_401(mock_urlopen):
         "http://example.com/api/v1/deployments/uuid",
         401,
         "Unauthorized",
-        {},
-        mock_fp,
+        cast("Any", {}),
+        cast("Any", mock_fp),
     )
 
     with pytest.raises(AuthenticationError, match="token"):
@@ -230,8 +233,8 @@ def test_fetch_deployment_403(mock_urlopen):
         "http://example.com/api/v1/deployments/uuid",
         403,
         "Forbidden",
-        {},
-        mock_fp,
+        cast("Any", {}),
+        cast("Any", mock_fp),
     )
 
     with pytest.raises(PermissionError_, match="permission"):
