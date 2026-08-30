@@ -24,7 +24,6 @@ from github_issue_creator import (
     _resolve_token,
 )
 
-
 # ── Fixtures ───────────────────────────────────────────────────────────────────
 
 

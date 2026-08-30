@@ -24,7 +24,6 @@ from coolify_deployment_logs import (
     _resolve_config,
 )
 
-
 # ── Fixtures ───────────────────────────────────────────────────────────────────
 
 
