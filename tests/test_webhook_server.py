@@ -21,7 +21,6 @@ import urllib.request
 from http.client import HTTPResponse
 from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 
 import pytest
 
