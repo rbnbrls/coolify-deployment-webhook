@@ -18,6 +18,8 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from http.client import HTTPResponse
+from collections.abc import Generator
 from pathlib import Path
 from typing import Generator
 
@@ -313,6 +315,8 @@ def server_url() -> Generator[str, None, None]:
 
     proc.terminate()
     proc.wait(timeout=5)
+    if proc.stdout is not None:
+        proc.stdout.close()
 
 
 class TestServerHTTP:
@@ -338,6 +342,7 @@ class TestServerHTTP:
         with pytest.raises(urllib.error.HTTPError) as exc_info:
             urllib.request.urlopen(f"{server_url}/unknown")
         assert exc_info.value.code == 404
+        exc_info.value.close()
 
     def test_post_to_webhook_with_valid_json(self, server_url: str) -> None:
         """Sending a valid JSON payload returns 200 (may be ignored or processed)."""
@@ -365,6 +370,7 @@ class TestServerHTTP:
         assert exc_info.value.code == 400
         data = json.loads(exc_info.value.read().decode())
         assert "Invalid JSON" in data["error"]
+        exc_info.value.close()
 
     def test_post_to_unknown_path(self, server_url: str) -> None:
         """POST to a non-/webhook path returns 404."""
@@ -377,6 +383,7 @@ class TestServerHTTP:
         with pytest.raises(urllib.error.HTTPError) as exc_info:
             urllib.request.urlopen(req)
         assert exc_info.value.code == 404
+        exc_info.value.close()
 
     def test_post_with_no_body(self, server_url: str) -> None:
         """Empty body returns 400."""
@@ -389,6 +396,7 @@ class TestServerHTTP:
         with pytest.raises(urllib.error.HTTPError) as exc_info:
             urllib.request.urlopen(req)
         assert exc_info.value.code == 400
+        exc_info.value.close()
 
     def test_post_without_content_type(self, server_url: str) -> None:
         """Even without Content-Type, valid JSON body is parsed."""
@@ -401,8 +409,13 @@ class TestServerHTTP:
             body=payload(event="deployment.successful"),
             headers={},
         )
-        resp = conn.getresponse()
-        assert resp.status == 200
-        data = json.loads(resp.read().decode())
-        assert data["status"] == "ignored"
-        conn.close()
+        resp: HTTPResponse | None = None
+        try:
+            resp = conn.getresponse()
+            assert resp.status == 200
+            data = json.loads(resp.read().decode())
+            assert data["status"] == "ignored"
+        finally:
+            if resp is not None:
+                resp.close()
+            conn.close()
