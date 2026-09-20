@@ -13,6 +13,7 @@ name: Create issue on CI failure
 
 on:
   workflow_run:
+    workflows: ["CI"]
     types:
       - completed
 
