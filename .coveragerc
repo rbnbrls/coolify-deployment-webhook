@@ -7,9 +7,20 @@
 #
 # The floor in [report] is the single definition of the gate: every runner that
 # reads this file (CI, or a local `pytest --cov`) fails below it.
+#
+# `relative_files` keeps the report machine-independent: without it coverage
+# writes the absolute checkout path into <sources>, so a report committed from
+# one machine could never match a run on another and the CI staleness check in
+# .github/workflows/ci.yml would be red on every push with nothing changed.
+#
+# `[xml] output` is the path both pytest-cov and the publisher
+# (scripts/coverage_report.py) use. The report is normalised and committed at the
+# repository root, which is where a reader fetches it from `main`; a measurement
+# that has not changed produces no diff at all.
 
 [run]
 branch = True
+relative_files = True
 source =
     webhook_server
     coolify_deployment_logs

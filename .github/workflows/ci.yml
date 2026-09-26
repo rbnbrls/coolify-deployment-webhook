@@ -48,9 +48,12 @@ jobs:
     # Coverage runner (pytest-cov), lint (ruff) and type check (mypy).
     #
     # The coverage floor lives in .coveragerc ([report] fail_under), so one
-    # number gates this job and a local `pytest --cov`. The line total is
-    # written to the job summary because no machine-readable coverage report is
-    # committed: the report is uploaded as a run artifact instead.
+    # number gates this job and a local `pytest --cov`. The machine-readable
+    # report is `coverage.xml` at the repository root: it is committed, so a
+    # reader (and the darkfactory quality lane) fetches it from `main`, where an
+    # uploaded run artifact would have expired. This job republishes the run's
+    # measurement there and fails while the committed copy no longer describes
+    # this tree.
     runs-on: ubuntu-latest
 
     steps:
@@ -78,15 +81,42 @@ jobs:
             --cov --cov-report=term-missing \
             --cov-report=xml:coverage.xml
 
-      - name: Report coverage line total
+      - name: Publish the coverage report
+        # The number a reader can trust is the *committed* report: the quality
+        # lane reads `coverage.xml` from the default branch, while an uploaded
+        # artifact expires and a log line is not durable evidence. This step
+        # republishes this run's measurement at the repository root, normalising
+        # away the timestamp; the next step refuses to pass while the committed
+        # copy no longer describes this tree.
         if: always()
         run: |
-          total=$(python -m coverage report --format=total 2>/dev/null || true)
+          python scripts/coverage_report.py --summary | tee "$RUNNER_TEMP/coverage-summary.txt"
+          status=${PIPESTATUS[0]}
           {
             echo "### Coverage"
             echo ""
-            echo "Line coverage: ${total}%"
+            cat "$RUNNER_TEMP/coverage-summary.txt"
+            echo ""
+            echo "Published at \`coverage.xml\` (committed at the repository root)."
           } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
+      - name: The committed coverage report must match this run
+        # `coverage.xml` reaches `main` through the merge, never through a push
+        # from this workflow: committing it here would need a write grant on the
+        # workflow token. So CI measures, normalises and compares, and a change
+        # that moves coverage has to republish the report in the same pull
+        # request.
+        run: |
+          if git diff --exit-code -- coverage.xml; then
+            echo "coverage.xml matches this run"
+            exit 0
+          fi
+          echo "::error::coverage.xml is out of date; republish it with:"
+          echo "::error::  python -m pytest tests/ --cov --cov-report=term-missing --cov-report=xml:coverage.xml"
+          echo "::error::  python scripts/coverage_report.py --summary"
+          git --no-pager diff --stat -- coverage.xml
+          exit 1
 
       - name: Upload coverage report
         if: always()
