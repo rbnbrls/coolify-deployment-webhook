@@ -1,0 +1,28 @@
+# ── Coverage configuration (coverage.py, driven by pytest-cov) ────────────────
+#
+# The CI "quality" job runs:  python -m pytest tests/ --cov --cov-report=term-missing
+# `source` is declared here so the application modules are measured and the test
+# suite itself is not: without it, `pytest --cov` (no target) measures everything
+# it imports and a bigger test suite silently inflates the number.
+#
+# The floor in [report] is the single definition of the gate: every runner that
+# reads this file (CI, or a local `pytest --cov`) fails below it.
+
+[run]
+branch = True
+source =
+    webhook_server
+    coolify_deployment_logs
+    github_issue_creator
+
+[report]
+precision = 1
+show_missing = True
+fail_under = 65
+exclude_lines =
+    pragma: no cover
+    if TYPE_CHECKING:
+    if __name__ == .__main__.:
+
+[xml]
+output = coverage.xml

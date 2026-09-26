@@ -1,0 +1,12 @@
+# ── Lint configuration (ruff) ──────────────────────────────────────────────────
+# CI runs `ruff check .`; run the same command locally before pushing.
+
+line-length = 100
+target-version = "py311"
+
+[lint]
+# ruff's own default set (E4/E7/E9/F) plus W (trailing whitespace, etc.),
+# B (bugbear) and C4 (comprehensions). E501 is deliberately not selected: the
+# Coolify log parsers carry long unwrapped URL and message literals in comments
+# and string constants, which are more readable unwrapped than split.
+select = ["E4", "E7", "E9", "F", "W", "B", "C4"]
