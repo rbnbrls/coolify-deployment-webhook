@@ -1,0 +1,16 @@
+# Development / CI quality tooling.
+#
+# Pinned exactly: ruff and mypy change their diagnostics between releases, so an
+# unpinned gate would pass locally and fail in CI (or the reverse). The packages
+# are deliberately NOT part of requirements.txt — the Docker image installs that
+# file into production and has no use for a linter, a type checker or coverage.
+#
+#   pip install -r requirements-dev.txt   # pytest + requests (via requirements.txt)
+#
+# The three commands CI runs against this toolchain are documented in README.md.
+-r requirements.txt
+pytest==9.1.1
+pytest-cov==7.1.0
+coverage==7.15.2
+ruff==0.15.22
+mypy==2.3.1

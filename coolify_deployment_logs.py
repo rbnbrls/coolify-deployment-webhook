@@ -202,7 +202,11 @@ def _make_request(url: str, api_token: str) -> dict[str, Any]:
             body = resp.read().decode("utf-8")
             if not body.strip():
                 raise CoolifyAPIError(f"Empty response from {url}")
-            return json.loads(body)
+            # `json.loads` is typed as returning `Any`; the annotation states the
+            # shape the Coolify API contract promises (an object) so the value may
+            # leave a function that declares `dict[str, Any]` under mypy --strict.
+            payload: dict[str, Any] = json.loads(body)
+            return payload
     except HTTPError as e:
         if e.code == 404:
             raise DeploymentNotFoundError(f"Deployment not found at {url}") from e
