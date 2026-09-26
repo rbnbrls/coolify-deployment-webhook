@@ -59,4 +59,4 @@ def test_ci_runs_the_coverage_lint_and_type_gates() -> None:
     assert "ruff check ." in workflow
     assert "mypy" in workflow
     assert "--cov" in workflow
-    assert "coverage report --format=total" in workflow
+    assert "scripts/coverage_report.py" in workflow
